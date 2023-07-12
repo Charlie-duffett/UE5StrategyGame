@@ -77,7 +77,7 @@ void AStrategyMiniMapCapture::Tick(float DeltaSeconds)
 void AStrategyMiniMapCapture::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	UProperty* PropertyThatChanged = PropertyChangedEvent.Property;
+	FProperty* PropertyThatChanged = PropertyChangedEvent.Property;
 	FName PropertyName = PropertyThatChanged != nullptr ? PropertyThatChanged->GetFName() : NAME_None;
 
 	if (PropertyName==FName(TEXT("RelativeRotation")))
