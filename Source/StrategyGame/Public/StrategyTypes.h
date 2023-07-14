@@ -34,6 +34,7 @@ namespace EGameplayState
 {
 	enum Type
 	{
+		Buying,
 		Waiting,
 		Playing,
 		Finished,

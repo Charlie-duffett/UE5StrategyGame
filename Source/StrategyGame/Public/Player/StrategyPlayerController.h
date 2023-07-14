@@ -51,6 +51,9 @@ public:
 	/** Toggles the ingame menu display. */
 	void OnToggleInGameMenu();
 
+	/** Readies up player */
+	void OnReadyUp();
+
 	/** Handler for mouse leaving the minimap. */
 	void MouseLeftMinimap();
 

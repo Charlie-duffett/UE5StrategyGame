@@ -132,15 +132,7 @@ void AStrategyGameState::FinishGame(EStrategyTeam::Type InWinningTeam)
 
 void AStrategyGameState::StartGameplayStateMachine()
 {
-	if (WarmupTime > 0.f)
-	{
-		SetGameplayState(EGameplayState::Waiting);
-		GetWorldTimerManager().SetTimer(TimerHandle_OnGameStart, this, &AStrategyGameState::OnGameStart, WarmupTime, false);
-	}
-	else
-	{
-		OnGameStart();
-	}
+	SetGameplayState(EGameplayState::Buying);
 }
 
 void AStrategyGameState::SetTimersPause(bool bIsPaused)
@@ -168,4 +160,18 @@ void AStrategyGameState::SetGameDifficulty(EGameDifficulty::Type NewDifficulty)
 float AStrategyGameState::GetGameFinishedTime() const
 {
 	return GameFinishedTime;
+
+}
+
+void AStrategyGameState::OnPlayerReady()
+{
+	if (WarmupTime > 0.f)
+	{
+		SetGameplayState(EGameplayState::Waiting);
+		GetWorldTimerManager().SetTimer(TimerHandle_OnGameStart, this, &AStrategyGameState::OnGameStart, WarmupTime, false);
+	}
+	else
+	{
+		OnGameStart();
+	}
 }

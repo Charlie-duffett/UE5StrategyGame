@@ -108,6 +108,7 @@ void SStrategySlateHUDWidget::Construct(const FArguments& InArgs)
 					]
 				]
 			]
+			/* Count down till wave starts */
 			+SOverlay::Slot()
 			.VAlign(VAlign_Top)
 			.HAlign(HAlign_Left)
@@ -116,6 +117,14 @@ void SStrategySlateHUDWidget::Construct(const FArguments& InArgs)
 				.TextStyle(FStrategyStyle::Get(), "StrategyGame.ResourcesTextStyle")
 				.Text(this, &SStrategySlateHUDWidget::GetGameTime)
 			]
+			+ SOverlay::Slot()
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Center)
+				[
+					SNew(STextBlock)
+					.TextStyle(FStrategyStyle::Get(), "StrategyGame.ResourcesTextStyle")
+					.Text(this, &SStrategySlateHUDWidget::GetGameReady)
+				]
 			/* Result screen { */
 			+SOverlay::Slot()
 			.VAlign(VAlign_Center)
@@ -343,6 +352,19 @@ FText SStrategySlateHUDWidget::GetGameTime() const
 		{
 			int32 const DisplaySecondsRemaining = FMath::CeilToInt(MyGameState->GetRemainingWaitTime());
 			return FText::Format( NSLOCTEXT("GameFlow", "GameStartsIn", "Game starts in {0}"), FText::AsNumber(DisplaySecondsRemaining) );
+		}
+	}
+	return FText::GetEmpty();
+}
+
+FText SStrategySlateHUDWidget::GetGameReady() const
+{
+	AStrategyGameState const* const MyGameState = OwnerHUD->GetWorld()->GetGameState<AStrategyGameState>();
+	if (MyGameState != NULL)
+	{
+		if (MyGameState->GameplayState == EGameplayState::Buying)
+		{
+			return FText(NSLOCTEXT("GameFlow", "GameReadyUp", "To Ready Up Press 'Space Bar'"));
 		}
 	}
 	return FText::GetEmpty();

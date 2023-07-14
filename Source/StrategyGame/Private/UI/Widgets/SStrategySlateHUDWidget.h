@@ -101,6 +101,9 @@ protected:
 	/** returns game timer information to display */
 	FText GetGameTime() const;
 
+	/** returns game ready up instruction string to display */
+	FText GetGameReady() const;
+
 	/** returns game result font (used for animation) */
 	FSlateFontInfo GetGameResultFont() const;
 

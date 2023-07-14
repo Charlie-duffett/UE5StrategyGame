@@ -118,6 +118,9 @@ public:
 	 */
 	void SetGameDifficulty(EGameDifficulty::Type NewDifficulty);
 
+	/** Notification that player has readied up. */
+	void OnPlayerReady();
+
 protected:
 	
 	// @todo, get rid of mutable?

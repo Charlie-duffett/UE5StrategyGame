@@ -41,6 +41,7 @@ void AStrategyPlayerController::SetupInputComponent()
 	FInputActionBinding& ToggleInGameMenuBinding = InputComponent->BindAction("InGameMenu", IE_Pressed, this, &AStrategyPlayerController::OnToggleInGameMenu);
 	ToggleInGameMenuBinding.bExecuteWhenPaused = true;
 
+	InputComponent->BindAction("ReadyUp", IE_Pressed, this, &AStrategyPlayerController::OnReadyUp);
 }
 
 void AStrategyPlayerController::GetAudioListenerPosition(FVector& OutLocation, FVector& OutFrontDir, FVector& OutRightDir)
@@ -89,6 +90,16 @@ void AStrategyPlayerController::OnToggleInGameMenu()
 		StrategyHUD->TogglePauseMenu();
 	}
 }
+
+void AStrategyPlayerController::OnReadyUp()
+{
+	// do I want this const? I guess as OnPlayerReady() will change a value I dont?
+	AStrategyGameState* MyGameState = GetWorld()->GetGameState<AStrategyGameState>();
+	if (MyGameState->GameplayState == EGameplayState::Buying) {
+		MyGameState->OnPlayerReady();
+	}
+}
+
 
 void AStrategyPlayerController::UpdateRotation(float DeltaTime)
 {
