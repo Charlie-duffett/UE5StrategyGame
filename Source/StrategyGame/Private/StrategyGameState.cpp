@@ -91,7 +91,7 @@ void AStrategyGameState::SetGameplayState(EGameplayState::Type NewState)
 
 bool AStrategyGameState::IsGameActive() const
 {
-	return GameplayState == EGameplayState::Playing;
+	return GameplayState != EGameplayState::Finished;
 }
 
 float AStrategyGameState::GetRemainingWaitTime() const
