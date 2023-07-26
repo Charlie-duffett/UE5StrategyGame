@@ -24,6 +24,9 @@ private:
 	USphereComponent* CollisionComp;
 public:
 
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	int MaxDistance;
+
 	/** type of damage */
 	UPROPERTY(EditDefaultsOnly, Category=Damage)
 	TSubclassOf<UDamageType> DamageType;

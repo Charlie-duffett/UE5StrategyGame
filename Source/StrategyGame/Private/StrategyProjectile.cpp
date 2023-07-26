@@ -12,7 +12,7 @@ AStrategyProjectile::AStrategyProjectile(const FObjectInitializer& ObjectInitial
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(1.0f);
@@ -40,7 +40,11 @@ void AStrategyProjectile::InitProjectile(const FVector& Direction, uint8 InTeamN
 	
 	MyTeamNum = InTeamNum;
 	RemainingDamage = ImpactDamage;
-	SetLifeSpan( InLifeSpan );
+	float MaxLifeSpan = MaxDistance / MovementComp->Velocity.Size();
+	/*UE_LOG(LogGame, Warning, TEXT("MaxLifeSpan: %f"), MaxLifeSpan);
+	UE_LOG(LogGame, Warning, TEXT("LifeSpan: %f"), InLifeSpan);*/
+
+	SetLifeSpan(MaxLifeSpan < InLifeSpan ? MaxLifeSpan : InLifeSpan);
 
 	bInitialized = true;
 }
