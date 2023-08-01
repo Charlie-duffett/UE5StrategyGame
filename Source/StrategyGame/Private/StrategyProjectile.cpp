@@ -12,7 +12,7 @@ AStrategyProjectile::AStrategyProjectile(const FObjectInitializer& ObjectInitial
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickGroup = TG_PrePhysics;
-	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(1.0f);
@@ -80,6 +80,7 @@ void AStrategyProjectile::NotifyActorBeginOverlap(class AActor* OtherActor)
 
 void AStrategyProjectile::OnHit(FHitResult const& HitResult)
 {
+	UE_LOG(LogGame, Warning, TEXT("Projectile hit something!"));
 	DealDamage(HitResult);
 	OnProjectileHit(HitResult.GetActor(), HitResult.ImpactPoint, HitResult.ImpactNormal);
 
@@ -92,6 +93,7 @@ void AStrategyProjectile::OnHit(FHitResult const& HitResult)
 
 void AStrategyProjectile::DealDamage(FHitResult const& HitResult)
 {
+	UE_LOG(LogGame, Warning, TEXT("Projectile Dealing damage!"));
 	const AStrategyChar* HitChar = Cast<AStrategyChar>(HitResult.GetActor());
 	const float PrevHealth = HitChar ? HitChar->Health : 0.0f;
 

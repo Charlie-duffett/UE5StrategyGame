@@ -83,11 +83,13 @@ void AStrategyBuilding::Destroyed()
 
 void AStrategyBuilding::OnInputTap_Implementation()
 {
+	AStrategyGameState* const StrategyGame = GetWorld()->GetGameState<AStrategyGameState>();
+	
 	if (bIsActionMenuDisplayed)
 	{
 		HideActionMenu();
 	}
-	else
+	else if (StrategyGame->GameplayState != EGameplayState::Playing) 
 	{
 		ShowActionMenu();
 	}

@@ -9,6 +9,8 @@
 class AStrategyChar;
 /*class AStrategyMiniMapCapture;*/
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWaveStartDynamicDelegate);
+
 UCLASS(config=Game)
 class AStrategyGameState : public AGameStateBase
 {
@@ -120,6 +122,14 @@ public:
 
 	/** Notification that player has readied up. */
 	void OnPlayerReady();
+
+	/** Event that a wave has started */
+	UPROPERTY(BlueprintAssignable, Category = WaveEvent)
+	FWaveStartDynamicDelegate OnWaveStart;
+
+	/** Event to tell C++ that a wave has Ended */
+	UFUNCTION(BlueprintCallable, Category = WaveEvent)
+	void OnWaveEnd();
 
 protected:
 	

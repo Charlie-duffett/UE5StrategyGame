@@ -79,6 +79,11 @@ void AStrategyGameState::SetGameplayState(EGameplayState::Type NewState)
 {
 	GameplayState = NewState;
 
+	if (NewState == EGameplayState::Playing) {
+		// Trigger wave start event
+		OnWaveStart.Broadcast();
+	}
+
 	// notify the breweries of the state change
 	for (int32 i = 0; i < PlayersData.Num(); i++)
 	{
@@ -174,4 +179,9 @@ void AStrategyGameState::OnPlayerReady()
 	{
 		OnGameStart();
 	}
+}
+
+void AStrategyGameState::OnWaveEnd()
+{
+	SetGameplayState(EGameplayState::Buying);
 }
