@@ -67,12 +67,11 @@ void AStrategyProjectile::NotifyActorBeginOverlap(class AActor* OtherActor)
 	const AStrategyChar* HitChar = Cast<AStrategyChar>(OtherActor);
 	if (HitChar && HitChar->GetTeamNum() > EStrategyTeam::Unknown && HitChar->GetTeamNum() != GetTeamNum())
 	{
-		FHitResult PawnHit;
-		//PawnHit.Actor = MakeWeakObjectPtr(const_cast<AStrategyChar*>(HitChar));
-		PawnHit.Component = HitChar->GetCapsuleComponent();
+		FHitResult PawnHit(OtherActor, HitChar->GetCapsuleComponent(), GetActorLocation(), -MovementComp->Velocity.GetSafeNormal());
+		
 		PawnHit.bBlockingHit = true;
-		PawnHit.Location = PawnHit.ImpactPoint = GetActorLocation();
-		PawnHit.Normal = PawnHit.ImpactNormal = -MovementComp->Velocity.GetSafeNormal();
+		PawnHit.ImpactPoint = GetActorLocation();
+		PawnHit.ImpactNormal = -MovementComp->Velocity.GetSafeNormal();
 
 		OnHit(PawnHit);
 	}
