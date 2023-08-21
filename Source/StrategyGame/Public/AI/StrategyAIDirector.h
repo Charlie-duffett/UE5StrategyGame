@@ -71,6 +71,10 @@ public:
 
 	/** request spawn from AI Director */
 	void RequestSpawn();
+
+	/** Spawn minion logic (Used aswell for player controlled minion */
+	AStrategyChar* SpawnMinion(bool bPlayerControlled = false);
+
 protected:
 	/** check conditions and spawn minions if possible */
 	void SpawnMinions();

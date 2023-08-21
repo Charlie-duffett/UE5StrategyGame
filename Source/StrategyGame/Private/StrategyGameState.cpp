@@ -92,6 +92,8 @@ void AStrategyGameState::SetGameplayState(EGameplayState::Type NewState)
 			PlayersData[i].Brewery->OnGameplayStateChange(NewState);
 		}
 	}
+	AStrategyPlayerController* const MyPlayer = Cast<AStrategyPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
+	MyPlayer->OnGameplayStateChange(NewState);
 }
 
 bool AStrategyGameState::IsGameActive() const

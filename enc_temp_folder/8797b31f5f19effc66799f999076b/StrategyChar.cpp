@@ -445,7 +445,15 @@ void AStrategyChar::LookUp(float Val)
 
 	if ((Val != 0.f) && (Controller != NULL))
 	{
-		AddControllerPitchInput(Val);
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, Val);
 	}
 }
 
@@ -454,6 +462,14 @@ void AStrategyChar::LookRight(float Val)
 
 	if ((Val != 0.f) && (Controller != NULL))
 	{
-		AddControllerYawInput(Val);
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(RightDirection, Val);
 	}
 }

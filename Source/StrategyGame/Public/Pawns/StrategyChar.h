@@ -108,6 +108,14 @@ public:
 	/** get all modifiers we have now on pawn */
 	const FPawnData& GetModifiedPawnData() { return ModifiedPawnData; }
 
+	void MoveForward(float Val);
+
+	void MoveRight(float Val);
+
+	void LookUp(float Val);
+
+	void LookRight(float Val);
+
 protected:
 	/** melee anim */
 	UPROPERTY(EditDefaultsOnly, Category=Pawn)

@@ -7,7 +7,8 @@
 
 class AStrategySpectatorPawn;
 class UStrategyCameraComponent;
-	
+class AStrategyBuilding_Brewery;
+
 UCLASS()
 class AStrategyPlayerController : public APlayerController, public IStrategyTeamInterface
 {
@@ -23,8 +24,15 @@ protected:
 	virtual void ProcessPlayerInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
+	virtual void BeginPlay();
 
 public:
+
+	/** Allied Brewery */
+	UPROPERTY(EditDefaultsOnly, Category = Brewery)
+	AStrategyBuilding_Brewery* AlliedBrewery;
+
+	TWeakObjectPtr<AStrategyChar> PossessedMinion = nullptr;
 
 	// Begin StrategyTeamInterface interface
 	virtual uint8 GetTeamNum() const override;
@@ -62,6 +70,9 @@ public:
 	
 	/** Handler for mouse release over minimap. */
 	void MouseReleasedOverMinimap();
+
+	/** Event for when gameplay state changes. */
+	void OnGameplayStateChange(EGameplayState::Type NewState);
 
 protected:
 	/** if set, input and camera updates will be ignored */
@@ -113,4 +124,12 @@ private:
 	
 	/** Helper to return camera component via spectator pawn. */
 	UStrategyCameraComponent* GetCameraComponent() const;
+
+	void MoveForward(float Val);
+
+	void MoveRight(float Val);
+
+	void LookUp(float Val);
+
+	void LookRight(float Val);
 };

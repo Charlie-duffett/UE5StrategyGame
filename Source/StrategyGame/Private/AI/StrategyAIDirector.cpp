@@ -118,7 +118,6 @@ struct OffsetsGeneratorHelper
 
 void UStrategyAIDirector::SpawnMinions()
 {
-	static OffsetsGeneratorHelper OffsetsGenerator;
 
 	const bool bShoudSpawnNewUnits = GetWorld()->GetTimeSeconds() > NextSpawnTime;
 	if (!bShoudSpawnNewUnits)
@@ -138,88 +137,7 @@ void UStrategyAIDirector::SpawnMinions()
 
 	if(WaveSize > 0)
 	{
-		// find best place on ground to spawn at
-		const AStrategyBuilding_Brewery* const Owner = Cast<AStrategyBuilding_Brewery>(GetOwner());
-		check(Owner);
-		bool bSpawnedNewMinion = false;
-		if( Owner->MinionCharClass != nullptr )
-		{
-			FVector Loc = Owner->GetActorLocation();
-			const FVector X = Owner->GetTransform().GetScaledAxis( EAxis::X );
-			const FVector Y = Owner->GetTransform().GetScaledAxis( EAxis::Y );
-			Loc += X * RadiusToSpawnOn +  Y * OffsetsGenerator.GetOffset();
-
-			const FVector Scale(CustomScale);
-			const FVector TraceOffset(0.0f,0.0f,RadiusToSpawnOn * 0.5 * Scale.Z);
-			FHitResult Hit;
-			FCollisionObjectQueryParams ObjectParams( FCollisionObjectQueryParams::AllStaticObjects );
-			GetWorld()->LineTraceSingleByObjectType(Hit, Loc + TraceOffset, Loc - TraceOffset, ObjectParams);
-			if (IsValid(Hit.GetActor()))
-			{
-				Loc = Hit.Location + FVector(0.0f,0.0f,Scale.Z * 10.0f);
-			}
-			AStrategyChar* StrategyChar = Owner->MinionCharClass->GetDefaultObject<AStrategyChar>();
-			const float CapsuleHalfHeight = StrategyChar->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
-			const float CapsuleRadius = StrategyChar->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
-			Loc = Loc + FVector( 0.0f,0.0f,Scale.Z * CapsuleHalfHeight);
-
-			// and spawn our minion
-			FActorSpawnParameters SpawnInfo;
-			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-			AStrategyChar* const MinionChar =  GetWorld()->SpawnActor<AStrategyChar>(Owner->MinionCharClass, Loc, Owner->GetActorRotation(), SpawnInfo);
-			// don't continue if he died right away on spawn
-			if ( (MinionChar != nullptr) && (MinionChar->bIsDying == false) )
-			{
-				// Flag a successful spawn
-				bSpawnedNewMinion = true;
-
-				MinionChar->SetTeamNum(GetTeamNum());
-
-				MinionChar->SpawnDefaultController();
-				MinionChar->GetCapsuleComponent()->SetRelativeScale3D(Scale);
-				MinionChar->GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
-				MinionChar->GetMesh()->GlobalAnimRateScale = AnimationRate;
-
-				AStrategyGameState* const GameState = GetWorld()->GetGameState<AStrategyGameState>();
-				if (GameState != nullptr)
-				{
-					GameState->OnCharSpawned(MinionChar);
-				}
-
-				MinionChar->ApplyBuff(BuffModifier);
-				if (DefaultWeapon != nullptr)
-				{
-					UStrategyGameBlueprintLibrary::GiveWeaponFromClass(MinionChar, DefaultWeapon);
-				}
-				if (DefaultArmor != nullptr)
-				{
-					UStrategyGameBlueprintLibrary::GiveArmorFromClass(MinionChar, DefaultArmor);
-				}
-
-				WaveSize -= 1;
-				WaveSize = FMath::Max(WaveSize, 0);
-				if (Owner != nullptr && WaveSize <= 0 && MyTeamNum==EStrategyTeam::Enemy)
-				{
-					Owner->OnWaveSpawned.Broadcast();
-				}
-				NextSpawnTime = GetWorld()->GetTimeSeconds() + FMath::FRandRange(2.0f, 3.0f);
-			}
-			else
-			{
-				UE_LOG(LogGame, Warning, TEXT("Failed to spawn minion.") );
-			}
-		}
-		else
-		{
-			// If we dont have a class type we cannot spawn a minion. 
-			UE_LOG(LogGame, Warning, TEXT("No minion class specified in %s. Cannot spawn minion"), *Owner->GetName() );			
-		}
-		// If we failed to spawn a minion try again soon
-		if( bSpawnedNewMinion == false )
-		{
-			NextSpawnTime = GetWorld()->GetTimeSeconds() + 0.1f;
-		}
+		SpawnMinion();
 	}
 }
 
@@ -232,4 +150,95 @@ void UStrategyAIDirector::TickComponent(float DeltaTime, enum ELevelTick TickTyp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	SpawnMinions();
+}
+
+
+AStrategyChar* UStrategyAIDirector::SpawnMinion(bool bPlayerControlled) {
+	static OffsetsGeneratorHelper OffsetsGenerator;
+	// find best place on ground to spawn at
+	const AStrategyBuilding_Brewery* const Owner = Cast<AStrategyBuilding_Brewery>(GetOwner());
+	check(Owner);
+	bool bSpawnedNewMinion = false;
+	if (Owner->MinionCharClass != nullptr)
+	{
+		FVector Loc = Owner->GetActorLocation();
+		const FVector X = Owner->GetTransform().GetScaledAxis(EAxis::X);
+		const FVector Y = Owner->GetTransform().GetScaledAxis(EAxis::Y);
+		Loc += X * RadiusToSpawnOn + Y * OffsetsGenerator.GetOffset();
+
+		const FVector Scale(CustomScale);
+		const FVector TraceOffset(0.0f, 0.0f, RadiusToSpawnOn * 0.5 * Scale.Z);
+		FHitResult Hit;
+		FCollisionObjectQueryParams ObjectParams(FCollisionObjectQueryParams::AllStaticObjects);
+		GetWorld()->LineTraceSingleByObjectType(Hit, Loc + TraceOffset, Loc - TraceOffset, ObjectParams);
+		if (IsValid(Hit.GetActor()))
+		{
+			Loc = Hit.Location + FVector(0.0f, 0.0f, Scale.Z * 10.0f);
+		}
+		AStrategyChar* StrategyChar = Owner->MinionCharClass->GetDefaultObject<AStrategyChar>();
+		const float CapsuleHalfHeight = StrategyChar->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight();
+		const float CapsuleRadius = StrategyChar->GetCapsuleComponent()->GetUnscaledCapsuleRadius();
+		Loc = Loc + FVector(0.0f, 0.0f, Scale.Z * CapsuleHalfHeight);
+
+		// and spawn our minion
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		AStrategyChar* const MinionChar = GetWorld()->SpawnActor<AStrategyChar>(Owner->MinionCharClass, Loc, Owner->GetActorRotation(), SpawnInfo);
+		// don't continue if he died right away on spawn
+		if ((MinionChar != nullptr) && (MinionChar->bIsDying == false))
+		{
+			// Flag a successful spawn
+			bSpawnedNewMinion = true;
+
+			MinionChar->SetTeamNum(GetTeamNum());
+
+			MinionChar->SpawnDefaultController();
+			MinionChar->GetCapsuleComponent()->SetRelativeScale3D(Scale);
+			MinionChar->GetCapsuleComponent()->SetCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
+			MinionChar->GetMesh()->GlobalAnimRateScale = AnimationRate;
+
+			AStrategyGameState* const GameState = GetWorld()->GetGameState<AStrategyGameState>();
+			if (GameState != nullptr)
+			{
+				GameState->OnCharSpawned(MinionChar);
+			}
+
+			MinionChar->ApplyBuff(BuffModifier);
+			if (DefaultWeapon != nullptr)
+			{
+				UStrategyGameBlueprintLibrary::GiveWeaponFromClass(MinionChar, DefaultWeapon);
+			}
+			if (DefaultArmor != nullptr)
+			{
+				UStrategyGameBlueprintLibrary::GiveArmorFromClass(MinionChar, DefaultArmor);
+			}
+			if (!bPlayerControlled) {
+				WaveSize -= 1;
+				WaveSize = FMath::Max(WaveSize, 0);
+				NextSpawnTime = GetWorld()->GetTimeSeconds() + FMath::FRandRange(2.0f, 3.0f);
+			}
+			
+			if (Owner != nullptr && WaveSize <= 0 && MyTeamNum == EStrategyTeam::Enemy)
+			{
+				Owner->OnWaveSpawned.Broadcast();
+			}
+			return MinionChar;
+		}
+		else
+		{
+			UE_LOG(LogGame, Warning, TEXT("Failed to spawn minion."));
+		}
+	}
+	else
+	{
+		// If we dont have a class type we cannot spawn a minion. 
+		UE_LOG(LogGame, Warning, TEXT("No minion class specified in %s. Cannot spawn minion"), *Owner->GetName());
+	}
+	// If we failed to spawn a minion try again soon
+	if (bSpawnedNewMinion == false && !bPlayerControlled)
+	{
+		NextSpawnTime = GetWorld()->GetTimeSeconds() + 0.1f;
+	}
+	return nullptr;
 }

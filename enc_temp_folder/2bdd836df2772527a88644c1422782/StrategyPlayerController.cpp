@@ -11,7 +11,6 @@
 #include "StrategyInputInterface.h"
 #include "StrategyBuilding_Brewery.h"
 #include "StrategyAIDirector.h"
-#include "Engine/Engine.h"
 
 
 AStrategyPlayerController::AStrategyPlayerController(const FObjectInitializer& ObjectInitializer) 
@@ -454,12 +453,10 @@ void AStrategyPlayerController::MoveRight(float Val)
 
 void AStrategyPlayerController::LookUp(float Val)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Up: %f"), Val));
 	if (PossessedMinion.IsValid() && PossessedMinion.Get() != nullptr)
 	{
-		PossessedMinion->LookUp(Val);
-		//AddPitchInput(Val);
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Up: %f"), Val));
+		/*PossessedMinion->LookUp(Val);*/
+		AddPitchInput(Val);
 	}
 }
 
@@ -467,9 +464,7 @@ void AStrategyPlayerController::LookRight(float Val)
 {
 	if (PossessedMinion.IsValid() && PossessedMinion.Get() != nullptr)
 	{
-		PossessedMinion->LookRight(Val);
-		//AddYawInput(Val);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Right: %f"), Val));
-
+		//PossessedMinion->LookRight(Val);
+		AddYawInput(Val);
 	}
 }
