@@ -32,8 +32,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Brewery)
 	AStrategyBuilding_Brewery* AlliedBrewery;
 
-	TWeakObjectPtr<AStrategyChar> PossessedMinion = nullptr;
-
 	// Begin StrategyTeamInterface interface
 	virtual uint8 GetTeamNum() const override;
 	// End StrategyTeamInterface interface
@@ -74,6 +72,12 @@ public:
 	/** Event for when gameplay state changes. */
 	void OnGameplayStateChange(EGameplayState::Type NewState);
 
+	/** Event for when the possessed minion is destoryed. */
+	void OnPossessedMinionDestroyed();
+
+	/** Event for when the wave ends. */
+	void OnWaveEnd();
+
 protected:
 	/** if set, input and camera updates will be ignored */
 	uint8 bIgnoreInput : 1;
@@ -92,6 +96,12 @@ protected:
 	/** Custom input handler. */
 	UPROPERTY()
 	class UStrategyInput* InputHandler;
+
+	/** Currently Possesed Minion */
+	TWeakObjectPtr<AStrategyChar> PossessedMinion = nullptr;
+
+	/** Last Possessed pawn. */
+	TWeakObjectPtr<APawn> LastPossessed = nullptr;
 
 	/** 
 	 * Change current selection (on toggle on the same). 
@@ -129,7 +139,7 @@ private:
 
 	void MoveRight(float Val);
 
-	void LookUp(float Val);
-
 	void LookRight(float Val);
+
+	void Attack();
 };

@@ -48,7 +48,6 @@ void AStrategyPlayerController::SetupInputComponent()
 
 	InputComponent->BindAxis("MoveForward", this, &AStrategyPlayerController::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AStrategyPlayerController::MoveRight);
-	InputComponent->BindAxis("LookUp", this, &AStrategyPlayerController::LookUp);
 	InputComponent->BindAxis("LookRight", this, &AStrategyPlayerController::LookRight);
 }
 
@@ -222,14 +221,20 @@ void AStrategyPlayerController::SetSelectedActor(AActor* NewSelectedActor, const
 
 void AStrategyPlayerController::OnTapPressed(const FVector2D& ScreenPosition, float DownTime)
 {
-	FVector WorldPosition(0.f);
-	AActor* const HitActor = GetFriendlyTarget(ScreenPosition, WorldPosition);
+	AStrategyGameState const* const MyGameState = GetWorld()->GetGameState<AStrategyGameState>();
+	if (MyGameState->GameplayState == EGameplayState::Playing && PossessedMinion != nullptr) {
+		Attack();
+	}
+	else {
+		FVector WorldPosition(0.f);
+		AActor* const HitActor = GetFriendlyTarget(ScreenPosition, WorldPosition);
 	
-	SetSelectedActor(HitActor, WorldPosition);
+		SetSelectedActor(HitActor, WorldPosition);
 
-	if (HitActor && HitActor->GetClass()->ImplementsInterface(UStrategyInputInterface::StaticClass()) )
-	{
-		IStrategyInputInterface::Execute_OnInputTap(HitActor);
+		if (HitActor && HitActor->GetClass()->ImplementsInterface(UStrategyInputInterface::StaticClass()) )
+		{
+			IStrategyInputInterface::Execute_OnInputTap(HitActor);
+		}
 	}
 }
 
@@ -404,18 +409,19 @@ void AStrategyPlayerController::MouseReleasedOverMinimap()
 
 void AStrategyPlayerController::OnGameplayStateChange(EGameplayState::Type NewState) {
 	
-	if (NewState == EGameplayState::Playing && AlliedBrewery != nullptr) {
-	// Spawn new minion and possess it 
+	if (NewState == EGameplayState::Playing && AlliedBrewery != nullptr) 
+	{
+		// Get the currently possessed pawn and save it
+		LastPossessed = GetPawn();
+		// Spawn new minion and possess it 
 		UStrategyAIDirector* AIDirector = AlliedBrewery->GetAIDirector();
 		PossessedMinion = AIDirector->SpawnMinion(true);
 		bShowMouseCursor = false;
 
 		Possess(PossessedMinion.Get());
-		
+		PossessedMinion->OnPlayerControlled();
+
 		return;
-	}
-	else {
-		UE_LOG(LogGame, Warning, TEXT("No Allied Brewery is set!"));
 	}
 }
 
@@ -452,24 +458,35 @@ void AStrategyPlayerController::MoveRight(float Val)
 	}
 }
 
-void AStrategyPlayerController::LookUp(float Val)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Up: %f"), Val));
-	if (PossessedMinion.IsValid() && PossessedMinion.Get() != nullptr)
-	{
-		PossessedMinion->LookUp(Val);
-		//AddPitchInput(Val);
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Up: %f"), Val));
-	}
-}
-
 void AStrategyPlayerController::LookRight(float Val)
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Right: %f"), Val));
 	if (PossessedMinion.IsValid() && PossessedMinion.Get() != nullptr)
 	{
 		PossessedMinion->LookRight(Val);
-		//AddYawInput(Val);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Right: %f"), Val));
+	}
+}
 
+void AStrategyPlayerController::Attack() {
+	if (PossessedMinion.IsValid() && PossessedMinion.Get() != nullptr)
+	{
+		PossessedMinion->PlayMeleeAnim();
+	}
+}
+
+void AStrategyPlayerController::OnPossessedMinionDestroyed() {
+	UnPossess();
+	bShowMouseCursor = true;
+
+	//Change controller state to spectating so it spawns in a controllable spectator pawn
+	ChangeState(NAME_Spectating);
+}
+
+void AStrategyPlayerController::OnWaveEnd() {
+	if (PossessedMinion.IsValid() && PossessedMinion.Get() != nullptr)
+	{
+		float Health = PossessedMinion->GetHealth();
+		PossessedMinion->Die(Health, FDamageEvent(UDamageType::StaticClass()), nullptr, nullptr);
+		PossessedMinion = nullptr;
 	}
 }

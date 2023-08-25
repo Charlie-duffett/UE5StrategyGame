@@ -185,5 +185,9 @@ void AStrategyGameState::OnPlayerReady()
 
 void AStrategyGameState::OnWaveEnd()
 {
+	// Notify the controller the wave has ended
+	AStrategyPlayerController* const MyController = Cast<AStrategyPlayerController>(GEngine->GetFirstLocalPlayerController(GetWorld()));
+	MyController->OnWaveEnd();
+
 	SetGameplayState(EGameplayState::Buying);
 }

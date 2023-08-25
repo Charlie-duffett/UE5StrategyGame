@@ -27,6 +27,9 @@ class AStrategyChar : public ACharacter, public IStrategyTeamInterface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Health)
 	float Health;
 
+	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USpringArmComponent> SpringArmComponent;
+
 public:
 
 	/**
@@ -112,9 +115,9 @@ public:
 
 	void MoveRight(float Val);
 
-	void LookUp(float Val);
-
 	void LookRight(float Val);
+
+	void OnPlayerControlled();
 
 protected:
 	/** melee anim */
@@ -154,6 +157,9 @@ protected:
 
 	/** event called after die animation  to hide character and delete it asap */
 	void OnDieAnimationEnd();
+
+	/** Function to make Chracter face in the same direction as the camera */
+	void FaceDirectionOfCamera();
 
 private:
 

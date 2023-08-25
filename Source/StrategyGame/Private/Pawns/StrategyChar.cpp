@@ -25,6 +25,10 @@ AStrategyChar::AStrategyChar(const FObjectInitializer& ObjectInitializer)
 		GetCharacterMovement()->bAlwaysCheckFloor = false;
 	}
 
+	// Create Spring arm for camera so we can control it here.
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArmComponent->SetupAttachment(RootComponent);
+
 	AIControllerClass = AStrategyAIController::StaticClass();
 	Health = 100.f;
 }
@@ -193,8 +197,13 @@ void AStrategyChar::Die(float KillingDamage, FDamageEvent const& DamageEvent, AC
 		GetCharacterMovement()->DisableMovement();
 	}
 
-	// detach the controller
-	if (Controller != nullptr)
+	AStrategyPlayerController* const PlayerControlled = Cast<AStrategyPlayerController>(Controller);
+	
+	if (PlayerControlled != nullptr) // Player controller has its own possess logic
+	{ 
+		PlayerControlled->OnPossessedMinionDestroyed();
+	} 
+	else if (Controller != nullptr) // detach the controller
 	{
 		Controller->UnPossess();
 	}	
@@ -411,15 +420,10 @@ void AStrategyChar::MoveForward(float Val)
 
 	if ((Val != 0.f) && (Controller != NULL))
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		FaceDirectionOfCamera();
 
 		// add movement 
-		AddMovementInput(ForwardDirection, Val);
+		AddMovementInput(GetActorForwardVector(), Val);
 	}
 }
 
@@ -428,32 +432,40 @@ void AStrategyChar::MoveRight(float Val)
 
 	if ((Val != 0.f) && (Controller != NULL))
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		FaceDirectionOfCamera();
 
 		// add movement 
-		AddMovementInput(RightDirection, Val);
+		AddMovementInput(GetActorRightVector(), Val);
 	}
 }
 
-void AStrategyChar::LookUp(float Val)
-{
-
-	if ((Val != 0.f) && (Controller != NULL))
-	{
-		AddControllerPitchInput(Val);
-	}
-}
 
 void AStrategyChar::LookRight(float Val)
 {
 
 	if ((Val != 0.f) && (Controller != NULL))
 	{
-		AddControllerYawInput(Val);
+		FRotator Rotation = FRotator(0.0f, Val, 0.0f);
+		SpringArmComponent->AddRelativeRotation(Rotation);
+
+	}
+}
+
+void AStrategyChar::FaceDirectionOfCamera() {
+	// Calculate rotation to camera direction
+	FRotator CameraRotation = SpringArmComponent->GetComponentRotation();
+	FRotator TargetRotation = FRotator(0, CameraRotation.Yaw, 0);
+
+	// Rotate the pawn to face the camera direction
+	SetActorRotation(TargetRotation);
+
+	// Reset camera to align with player
+	SpringArmComponent->SetWorldRotation(CameraRotation);
+
+}
+
+void AStrategyChar::OnPlayerControlled() {
+	if (GetCharacterMovement()) {
+		GetCharacterMovement()->bUseControllerDesiredRotation = false;
 	}
 }
